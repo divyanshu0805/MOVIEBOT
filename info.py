@@ -63,10 +63,10 @@ F_DB_URI = environ.get('F_DB_URI', "")
 S_DB_URI = environ.get('S_DB_URI', "")
 
 # Links
-GRP_LNK = environ.get('GRP_LNK', 'https://t.me/vj_bot_disscussion')
-CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/vj_bots')
-SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'vj_bot_disscussion')
-OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/kingvj01')
+GRP_LNK = environ.get('GRP_LNK', 'https://t.me/botcolony')
+CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/botroomz')
+SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'botroomzz')
+OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/medevu')
 
 # Auth Groups — bot sirf inhi groups mein kaam karega (khali = sabhi groups)
 # Multiple IDs space se alag karein: "-100123456 -100789012"
@@ -74,12 +74,12 @@ auth_groups_raw = environ.get('AUTH_GROUPS', '')
 AUTH_GROUPS = [int(g) for g in auth_groups_raw.split() if g.strip()] if auth_groups_raw.strip() else []
 
 # Main Channel & Search GC (caption mein mention ke liye)
-MAIN_CHANNEL_USERNAME = environ.get('MAIN_CHANNEL_USERNAME', 'vj_bots')
+MAIN_CHANNEL_USERNAME = environ.get('MAIN_CHANNEL_USERNAME', 'botroomz')
 SEARCH_GC_NAME = environ.get('SEARCH_GC_NAME', 'Movie Search Group')
 
 # Feature Toggles
 AI_SPELL_CHECK = bool(environ.get('AI_SPELL_CHECK', True))
-PM_SEARCH = bool(environ.get('PM_SEARCH', True))
+PM_SEARCH = bool(environ.get('PM_SEARCH', False))
 BUTTON_MODE = bool(environ.get('BUTTON_MODE', True))
 MAX_BTN = bool(environ.get('MAX_BTN', True))
 IS_TUTORIAL = bool(environ.get('IS_TUTORIAL', False))
