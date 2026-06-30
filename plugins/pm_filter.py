@@ -1115,30 +1115,7 @@ async def filter_qualities_cb_handler(client: Client, query: CallbackQuery):
 async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
         await query.message.delete()
-        user_id = query.from_user.id
-        free_trial_status = await db.get_free_trial_status(user_id)
-        if not free_trial_status:            
-            new_text = "**ʏᴏᴜ ᴄᴀɴ ᴜsᴇ ꜰʀᴇᴇ ᴛʀᴀɪʟ ꜰᴏʀ 5 ᴍɪɴᴜᴛᴇs ꜰʀᴏᴍ ɴᴏᴡ 😀\n\nआप अब से 5 मिनट के लिए निःशुल्क ट्रायल का उपयोग कर सकते हैं 😀**"        
-            await query.message.edit_text(text=new_text)
-            return
-        else:
-            await query.message.edit_text(text=new_text)
-            return
-            
-    elif query.data == "buy_premium":
-        btn = [[            
-            InlineKeyboardButton("✅sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ ʜᴇʀᴇ ✅", url = OWNER_LINK)
-        ]
-            for admin in ADMINS
-        ]
-        btn.append(
-            [InlineKeyboardButton("⚠️ᴄʟᴏsᴇ / ᴅᴇʟᴇᴛᴇ⚠️", callback_data="close_data")]
-        )
-        reply_markup = InlineKeyboardMarkup(btn)
-        await query.message.reply_photo(
-            reply_markup=reply_markup
-        )
-        return 
+        return
     elif query.data == "gfiltersdeleteallconfirm":
         await del_allg(query.message, 'gfilters')
         await query.answer("Done !")
@@ -1833,6 +1810,18 @@ async def cb_handler(client: Client, query: CallbackQuery):
         await query.answer(text=script.SINFO, show_alert=True)
 
     elif query.data == "start":
+        await query.message.edit_text(
+            text=script.START_TXT.format(query.from_user.mention, temp.U_NAME, temp.B_NAME),
+            reply_markup=InlineKeyboardMarkup(
+                [[
+                    InlineKeyboardButton('🔍 ＳＥＡＲＣＨ ＨＥＲＥ 🔍', url=GRP_LNK)
+                ],[
+                    InlineKeyboardButton('🛠 Hᴇʟᴘ', callback_data='help'),
+                    InlineKeyboardButton('📊 Aʙᴏᴜᴛ', callback_data='about')
+                ]]
+            )
+        )
+
 async def auto_filter(client, name, msg, reply_msg, ai_search, spoll=False):
     curr_time = datetime.now(pytz.timezone('Asia/Kolkata')).time()
     if not spoll:
@@ -2567,4 +2556,3 @@ async def global_filters(client, message, text=False):
                 break
     else:
         return False
-
