@@ -121,10 +121,9 @@ Join My <a href='https://telegram.me/vj_bots'>Update Channel</a> For More Update
 
 
 <details><summary><b>Deploy To Heroku</b></summary>
-<p>
-<br>
-<b>First Connect Your GitHub Account Then Select Repo And Deploy With Procfile.</b>
-</p>
+
+<p align="center"><a href="https://dashboard.heroku.com/new?template=https://github.com/divyanshu0805/MOVIEBOT"> <img src="https://img.shields.io/badge/Deploy%20On%20Heroku-red?style=for-the-badge&logo=heroku" width="520" height="138.45"/></a></p>
+
 </details>
 
 <details><summary><b>Deploy To Koyeb</b></summary>
