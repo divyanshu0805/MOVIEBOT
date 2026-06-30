@@ -22,7 +22,14 @@ logger.setLevel(logging.INFO)
 join_db = JoinReqs
 BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))")
 
-imdb = Cinemagoer() 
+_imdb_instance = None
+def get_imdb():
+    # Lazy-load Cinemagoer — instantiating it at import time can crash on some
+    # platforms (e.g. Heroku) due to a SQLite cache URL bug in the library.
+    global _imdb_instance
+    if _imdb_instance is None:
+        _imdb_instance = Cinemagoer()
+    return _imdb_instance
 TOKENS = {}
 VERIFIED = {}
 BANNED = {}
@@ -107,7 +114,7 @@ async def get_poster(query, bulk=False, id=False, file=None):
                 year = list_to_str(year[:1]) 
         else:
             year = None
-        movieid = imdb.search_movie(title.lower(), results=10)
+        movieid = get_imdb().search_movie(title.lower(), results=10)
         if not movieid:
             return None
         if year:
@@ -124,7 +131,7 @@ async def get_poster(query, bulk=False, id=False, file=None):
         movieid = movieid[0].movieID
     else:
         movieid = query
-    movie = imdb.get_movie(movieid)
+    movie = get_imdb().get_movie(movieid)
     if not movie:
         return None
     if movie.get("original air date"):
