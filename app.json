@@ -1,0 +1,69 @@
+{
+  "name": "DEGs Filter Bot",
+  "description": "DEGs Auto Filter Bot — Telegram movie/file search bot.",
+  "logo": "https://graph.org/file/ce1723991756e48c35aa1.jpg",
+  "repository": "https://github.com/divyanshu0805/MOVIEBOT",
+  "keywords": ["python", "telegram", "bot", "pyrogram", "filter-bot"],
+  "env": {
+    "API_ID": {
+      "description": "Telegram API ID — my.telegram.org se lo",
+      "value": ""
+    },
+    "API_HASH": {
+      "description": "Telegram API HASH — my.telegram.org se lo",
+      "value": ""
+    },
+    "BOT_TOKEN": {
+      "description": "BotFather se mila Bot Token",
+      "value": ""
+    },
+    "ADMINS": {
+      "description": "Bot admins ki Telegram User ID (space se alag karke multiple)",
+      "value": ""
+    },
+    "DATABASE_URI": {
+      "description": "MongoDB connection URI",
+      "value": ""
+    },
+    "LOG_CHANNEL": {
+      "description": "Log Channel ID (bot ko admin banao)",
+      "value": ""
+    },
+    "CHANNELS": {
+      "description": "File index karne wale Channel IDs (space se alag)",
+      "value": ""
+    },
+    "AUTH_GROUPS": {
+      "description": "Bot sirf inhi group IDs mein kaam karega (khali = sabhi groups)",
+      "value": "",
+      "required": false
+    },
+    "MAIN_CHANNEL_USERNAME": {
+      "description": "Apna main channel ka username (@ ke bina)",
+      "value": "",
+      "required": false
+    },
+    "GRP_LNK": {
+      "description": "Apne search group ka full link",
+      "value": "",
+      "required": false
+    },
+    "AUTH_CHANNEL": {
+      "description": "Force Subscribe Channel ID (optional)",
+      "value": "",
+      "required": false
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "stack": "heroku-24"
+}
