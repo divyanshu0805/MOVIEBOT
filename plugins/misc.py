@@ -1,11 +1,7 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @DEGs
-# Ask Doubt on telegram @KingVJ01
-
 import os, logging, time
 from pyrogram import Client, filters, enums
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
-from info import IMDB_TEMPLATE
+from info import IMDB_TEMPLATE, IMDB
 from utils import extract_user, get_file_id, get_poster, last_online 
 from datetime import datetime
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
@@ -132,10 +128,16 @@ async def who_is(client, message):
 
 @Client.on_message(filters.command(["imdb", 'search']))
 async def imdb_search(client, message):
+    if not IMDB:
+        return await message.reply("<b>IMDb ꜰᴇᴀᴛᴜʀᴇ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪꜱᴀʙʟᴇᴅ.</b>")
     if ' ' in message.text:
         k = await message.reply('Searching ImDB')
         r, title = message.text.split(None, 1)
-        movies = await get_poster(title, bulk=True)
+        try:
+            movies = await get_poster(title, bulk=True)
+        except Exception as e:
+            logger.exception(e)
+            return await k.edit("⚠️ IMDb sᴇʀᴠɪᴄᴇ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴀᴠᴀɪʟᴀʙʟᴇ. Tʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ.")
         if not movies:
             return await message.reply("No results Found")
         btn = [
@@ -154,7 +156,11 @@ async def imdb_search(client, message):
 @Client.on_callback_query(filters.regex('^imdb'))
 async def imdb_callback(bot: Client, quer_y: CallbackQuery):
     i, movie = quer_y.data.split('#')
-    imdb = await get_poster(query=movie, id=True)
+    try:
+        imdb = await get_poster(query=movie, id=True)
+    except Exception as e:
+        logger.exception(e)
+        return await quer_y.answer("⚠️ IMDb sᴇʀᴠɪᴄᴇ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴀᴠᴀɪʟᴀʙʟᴇ.", show_alert=True)
     btn = [
             [
                 InlineKeyboardButton(
@@ -212,7 +218,3 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
     else:
         await quer_y.message.edit(caption, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=False)
     await quer_y.answer()
-        
-
-        
-
