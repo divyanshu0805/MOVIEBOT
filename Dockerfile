@@ -1,7 +1,3 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @DEGs
-# Ask Doubt on telegram @KingVJ01
-
 FROM python:3.10.8-slim-buster
 
 RUN apt update && apt upgrade -y
