@@ -1,7 +1,3 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @DEGs
-# Ask Doubt on telegram @KingVJ01
-
 import sys, glob, importlib, logging, logging.config, pytz, asyncio
 from pathlib import Path
 
