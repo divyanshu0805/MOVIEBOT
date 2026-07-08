@@ -1,7 +1,3 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @DEGs
-# Ask Doubt on telegram @KingVJ01
-
 def get_readable_time(seconds: int) -> str:
     count = 0
     readable_time = ""
