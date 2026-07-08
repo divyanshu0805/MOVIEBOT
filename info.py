@@ -89,7 +89,7 @@ AUTO_DELETE = bool(environ.get('AUTO_DELETE', True))
 LONG_IMDB_DESCRIPTION = bool(environ.get("LONG_IMDB_DESCRIPTION", False))
 SPELL_CHECK_REPLY = bool(environ.get("SPELL_CHECK_REPLY", True))
 MELCOW_NEW_USERS = bool(environ.get('MELCOW_NEW_USERS', True))
-PROTECT_CONTENT = bool(environ.get('PROTECT_CONTENT', False))
+PROTECT_CONTENT = bool(environ.get('PROTECT_CONTENT', True))
 PUBLIC_FILE_STORE = bool(environ.get('PUBLIC_FILE_STORE', True))
 NO_RESULTS_MSG = bool(environ.get("NO_RESULTS_MSG", False))
 USE_CAPTION_FILTER = bool(environ.get('USE_CAPTION_FILTER', True))
@@ -129,13 +129,13 @@ YEARS = ["1900", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998",
 # Online Stream and Download
 STREAM_MODE = bool(environ.get('STREAM_MODE', True))
 MULTI_CLIENT = False
-SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '60'))
+SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '120'))
 PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))
 if 'DYNO' in environ:
     ON_HEROKU = True
 else:
     ON_HEROKU = False
-URL = environ.get("URL", "https://yourapp.herokuapp.com/")
+URL = environ.get("URL", "https://funhub.indevs.in/")
 
 # Rename
 RENAME_MODE = bool(environ.get('RENAME_MODE', False))
@@ -157,6 +157,5 @@ else:
     FILE_DB_URI = F_DB_URI
     SEC_FILE_DB_URI = S_DB_URI
 
-# Don't Remove Credit @VJ_Bots
 # Subscribe YouTube Channel For Amazing Bot @DEGs
 # Ask Doubt on telegram @KingVJ01
