@@ -20,6 +20,16 @@ join_db = JoinReqs
 async def auto_approve(client, message: ChatJoinRequest):
     if REQUEST_TO_JOIN_MODE == False:
         return 
+    # DM force-request-to-join ke liye multiple channels/groups track karo
+    if DM_AUTH_CHANNELS and message.chat.id in DM_AUTH_CHANNELS:
+        multi_join_db = JoinReqs(message.chat.id)
+        if multi_join_db.isActive():
+            await multi_join_db.add_user(
+                user_id=message.from_user.id,
+                first_name=message.from_user.first_name,
+                username=message.from_user.username,
+                date=message.date
+            )
     if message.chat.id != AUTH_CHANNEL:
         return 
     if not join_db().isActive():
