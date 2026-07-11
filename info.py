@@ -1,7 +1,3 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @DEGs
-# Ask Doubt on telegram @KingVJ01
-
 import re
 from os import environ
 from Script import script 
@@ -34,6 +30,10 @@ TRY_AGAIN_BTN = bool(environ.get('TRY_AGAIN_BTN', True))
 
 auth_channel = environ.get('AUTH_CHANNEL', '')
 AUTH_CHANNEL = int(auth_channel) if auth_channel and id_pattern.search(auth_channel) else None
+
+# Multiple channels/groups for DM force-request-to-join (space separated IDs)
+dm_auth_channels = environ.get('DM_AUTH_CHANNELS', '')
+DM_AUTH_CHANNELS = [int(x) for x in dm_auth_channels.split() if id_pattern.search(x)] if dm_auth_channels else []
 
 # Request channel (for /request or #request)
 reqst_channel = environ.get('REQST_CHANNEL', '')
