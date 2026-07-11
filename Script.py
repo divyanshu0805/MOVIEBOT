@@ -134,6 +134,7 @@ Aᴅᴅᴇᴅ Bʏ - {}"""
 
     LOG_TEXT_P = """#NewUser
 ID - <code>{}</code>
+𝐔sᴇʀɴᴀᴍᴇ - {}"""
 Nᴀᴍᴇ - {}"""
 
     ALRT_TXT = """ʜᴇʟʟᴏ {},
