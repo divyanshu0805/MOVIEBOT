@@ -12,6 +12,9 @@ from database.ia_filterdb import col, sec_col, db as vjdb, sec_db, get_file_deta
 from database.filters_mdb import del_all, find_filter, get_filters
 from database.connections_mdb import mydb, active_connection, all_connections, delete_connection, if_active, make_active, make_inactive
 from database.gfilters_mdb import find_gfilter, get_gfilters, del_allg
+from database.join_reqs import JoinReqs
+
+_REQ_LINK_CACHE = {}
 from urllib.parse import quote_plus
 from DEGs.util.file_properties import get_name, get_hash, get_media_file_size
 
@@ -36,19 +39,6 @@ async def give_filter(client, message):
 
     if message.chat.id != SUPPORT_CHAT_ID:
         settings = await get_settings(message.chat.id)
-        chatid = message.chat.id 
-        user_id = message.from_user.id if message.from_user else 0
-        if settings['fsub'] != None:
-            try:
-                btn = await pub_is_subscribed(client, message, settings['fsub'])
-                if btn:
-                    btn.append([InlineKeyboardButton("Unmute Me 🔕", callback_data=f"unmuteme#{int(user_id)}")])
-                    await client.restrict_chat_member(chatid, message.from_user.id, ChatPermissions(can_send_messages=False))
-                    await message.reply_photo(photo=random.choice(PICS), caption=f"👋 Hello {message.from_user.mention},\n\nPlease join the channel then click on unmute me button. 😇", reply_markup=InlineKeyboardMarkup(btn), parse_mode=enums.ParseMode.HTML)
-                    return
-            except Exception as e:
-                print(e)
-            
         manual = await manual_filters(client, message)
         if manual == False:
             settings = await get_settings(message.chat.id)
@@ -76,26 +66,82 @@ async def give_filter(client, message):
 @Client.on_message(filters.private & filters.text & filters.incoming)
 async def pm_text(bot, message):
     content = message.text
-    user = message.from_user.first_name
-    user_id = message.from_user.id
     if content.startswith("/") or content.startswith("#"): return  # ignore commands and hashtags
 
-    # ── DM Search Block ─────────────────────────────────────────────────────
-    # User ne DM mein search kiya → GC ka link dedo, yahan search nahi hogi
-    btn = InlineKeyboardMarkup([[
-        InlineKeyboardButton(f"🔍 {SEARCH_GC_NAME}", url=GRP_LNK)
-    ]])
-    await bot.send_message(
-        message.from_user.id,
-        f"<b>👋 Hello {message.from_user.mention}!\n\n"
-        f"🚫 Yahan DM mein movie search nahi hoti.\n\n"
-        f"✅ Movies search karne ke liye niche diye gaye group mein jao:\n\n"
-        f"📢 Our Channel : @{MAIN_CHANNEL_USERNAME}\n"
-        f"🔍 Search Group : {SEARCH_GC_NAME}</b>",
-        reply_markup=btn,
-        parse_mode=enums.ParseMode.HTML
-    )
-    
+    # ── Force Request-to-Join gate for DM search (multiple channels/groups) ──
+    if REQUEST_TO_JOIN_MODE and DM_AUTH_CHANNELS:
+        pending = []
+        for chan_id in DM_AUTH_CHANNELS:
+            already_ok = False
+            try:
+                member = await bot.get_chat_member(chan_id, message.from_user.id)
+                if member.status in [enums.ChatMemberStatus.MEMBER, enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]:
+                    already_ok = True
+            except Exception:
+                already_ok = False
+
+            if not already_ok:
+                join_db = JoinReqs(chan_id)
+                if join_db.isActive():
+                    already_requested = await join_db.get_user(message.from_user.id)
+                    if not already_requested:
+                        pending.append(chan_id)
+
+        if pending:
+            btn = []
+            for chan_id in pending:
+                req_link = _REQ_LINK_CACHE.get(chan_id)
+                if not req_link:
+                    try:
+                        invite = await bot.create_chat_invite_link(chat_id=int(chan_id), creates_join_request=True)
+                        req_link = invite.invite_link
+                        _REQ_LINK_CACHE[chan_id] = req_link
+                    except Exception as e:
+                        print(e)
+                        await message.reply_text(f"<b>⚠️ Bot ko pehle {chan_id} me admin banao.</b>")
+                        return
+                try:
+                    chat_title = (await bot.get_chat(chan_id)).title
+                except Exception:
+                    chat_title = "Channel"
+                btn.append([InlineKeyboardButton(f"📢 Jᴏɪɴ {chat_title}", url=req_link)])
+            btn.append([InlineKeyboardButton("✅ I've Requested, Try Again", callback_data="checkjoinreq")])
+            await message.reply_text(
+                f"<b>👋 Hello {message.from_user.mention}!\n\n"
+                f"🚫 Movie search karne se pehle neeche diye gaye sabhi channels/groups me 'Request to Join' karo.\n\n"
+                f"✅ Sab request bhejne ke baad 'I've Requested, Try Again' button dabao.</b>",
+                reply_markup=InlineKeyboardMarkup(btn),
+                parse_mode=enums.ParseMode.HTML
+            )
+            return
+
+    # ── DM Search ────────────────────────────────────────────────────────────
+    reply_msg = await message.reply_text(f"<b><i>Searching For {message.text} 🔍</i></b>")
+    await auto_filter(bot, message.text, message, reply_msg, ai_search=True)
+@Client.on_callback_query(filters.regex(r"^checkjoinreq"))
+async def check_join_req(bot, query):
+    still_pending = False
+    for chan_id in DM_AUTH_CHANNELS:
+        already_ok = False
+        try:
+            member = await bot.get_chat_member(chan_id, query.from_user.id)
+            if member.status in [enums.ChatMemberStatus.MEMBER, enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]:
+                already_ok = True
+        except Exception:
+            already_ok = False
+        if not already_ok:
+            join_db = JoinReqs(chan_id)
+            already_ok = bool(await join_db.get_user(query.from_user.id))
+        if not already_ok:
+            still_pending = True
+            break
+
+    if not still_pending:
+        await query.answer("✅ Verified! Ab aap movie ka naam type karke search kar sakte ho.", show_alert=True)
+        await query.message.delete()
+    else:
+        await query.answer("❌ Aapne abhi tak request nahi bheji. Pehle 'Request to Join' button dabao.", show_alert=True)
+
 @Client.on_callback_query(filters.regex(r"^next"))
 async def next_page(bot, query):
     ident, req, key, offset = query.data.split("_")
@@ -1389,27 +1435,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
             logger.exception(e)
             await query.answer(url=f"https://telegram.me/{temp.U_NAME}?start=sendfiles4_{key}")
 
-    elif query.data.startswith("unmuteme"):
-        ident, userid = query.data.split("#")
-        user_id = query.from_user.id
-        settings = await get_settings(int(query.message.chat.id))
-        if userid == 0:
-            await query.answer("You are anonymous admin !", show_alert=True)
-            return
-        try:
-            btn = await pub_is_subscribed(client, query, settings['fsub'])
-            if btn:
-                await query.answer("Kindly Join Given Channel Then Click On Unmute Button", show_alert=True)
-            else:
-                await client.unban_chat_member(query.message.chat.id, user_id)
-                await query.answer("Unmuted Successfully !", show_alert=True)
-                try:
-                    await query.message.delete()
-                except:
-                    return
-        except:
-            await query.answer("Not For Your My Dear", show_alert=True)
-   
     elif query.data.startswith("del"):
         ident, file_id = query.data.split("#")
         files_ = await get_file_details(file_id)
@@ -1807,7 +1832,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
     elif query.data == "start":
         buttons = [[
-            InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+            InlineKeyboardButton('** ᴏᴡɴᴇʀ ᴄᴏɴᴛᴀᴄᴛ **', url="https://t.me/Dmconnectorbot")
         ],[
             InlineKeyboardButton('🔍 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
         ],[
@@ -1915,7 +1940,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "about":
         buttons = [[
             InlineKeyboardButton('Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ', url=GRP_LNK),
-            InlineKeyboardButton(' ** ᴏᴡɴᴇʀ ᴄᴏɴᴛᴀᴄᴛ **', url="https://t.me/Dmconnectorbot")
+            InlineKeyboardButton('Sᴏᴜʀᴄᴇ Cᴏᴅᴇ', url="https://github.com/VJBots/VJ-FILTER-BOT")
         ],[
             InlineKeyboardButton('Hᴏᴍᴇ', callback_data='start'),
             InlineKeyboardButton('Cʟᴏsᴇ', callback_data='close_data')
