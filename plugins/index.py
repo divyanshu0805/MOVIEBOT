@@ -1,7 +1,3 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @DEGs
-# Ask Doubt on telegram @KingVJ01
-
 import logging, re, asyncio
 from utils import temp
 from info import ADMINS
@@ -161,6 +157,17 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
                         )
                     except MessageNotModified:
                         pass
+                    except Exception:
+                        # Status message delete/invalid ho gaya ho to indexing rukni nahi chahiye,
+                        # bas ek naya status message bana lo aur aage badho
+                        try:
+                            msg = await bot.send_message(
+                                msg.chat.id,
+                                text=f"Total messages fetched: <code>{current}</code>\nTotal messages saved: <code>{total_files}</code>\nDuplicate Files Skipped: <code>{duplicate}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nNon-Media messages skipped: <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\nErrors Occurred: <code>{errors}</code>",
+                                reply_markup=reply
+                            )
+                        except Exception as e2:
+                            logger.exception(e2)
                 if message.empty:
                     deleted += 1
                     continue
@@ -175,7 +182,7 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
                     unsupported += 1
                     continue
                 media.caption = message.caption
-                aynav, vnay = await save_file(media)
+                aynav, vnay = await save_file(media, chat_id=message.chat.id, msg_id=message.id)
                 if aynav:
                     total_files += 1
                 elif vnay == 0:
@@ -184,9 +191,14 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
                     errors += 1
         except Exception as e:
             logger.exception(e)
-            k = await msg.edit(f'Error: {e}')
+            try:
+                k = await msg.edit(f'Error: {e}')
+            except Exception:
+                k = await bot.send_message(msg.chat.id, f'Error: {e}')
             await k.reply_text(f'Succesfully saved <code>{total_files}</code> to dataBase!\nDuplicate Files Skipped: <code>{duplicate}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nNon-Media messages skipped: <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\nErrors Occurred: <code>{errors}</code>')
             await k.reply_text("**If You Get Message Not Modified Error Then Skip Your Saved File Then Index Again**")
         else:
-            await msg.edit(f'Succesfully saved <code>{total_files}</code> to dataBase!\nDuplicate Files Skipped: <code>{duplicate}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nNon-Media messages skipped: <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\nErrors Occurred: <code>{errors}</code>')
-
+            try:
+                await msg.edit(f'Succesfully saved <code>{total_files}</code> to dataBase!\nDuplicate Files Skipped: <code>{duplicate}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nNon-Media messages skipped: <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\nErrors Occurred: <code>{errors}</code>')
+            except Exception:
+                await bot.send_message(msg.chat.id, f'Succesfully saved <code>{total_files}</code> to dataBase!\nDuplicate Files Skipped: <code>{duplicate}</code>\nDeleted Messages Skipped: <code>{deleted}</code>\nNon-Media messages skipped: <code>{no_media + unsupported}</code>(Unsupported Media - `{unsupported}` )\nErrors Occurred: <code>{errors}</code>')
