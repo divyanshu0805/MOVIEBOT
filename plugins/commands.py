@@ -16,6 +16,34 @@ logger = logging.getLogger(__name__)
 BATCH_FILES = {}
 join_db = JoinReqs
 
+async def deliver_file(client, chat_id, files, file_id, caption, protect_content, reply_markup):
+    """Send a movie file to the user.
+    Naye indexed records ke liye 'chat_id'/'msg_id' (original channel message) available hote hai,
+    unke liye copy_message use karo — ye hamesha reliable hai (fresh file_reference khud resolve hota hai).
+    Purane records (jinme ye fields nahi hai) ke liye purane send_cached_media pe fallback karo.
+    """
+    src_chat = files.get("chat_id") if isinstance(files, dict) else None
+    src_msg = files.get("msg_id") if isinstance(files, dict) else None
+    if src_chat and src_msg:
+        try:
+            return await client.copy_message(
+                chat_id=chat_id,
+                from_chat_id=src_chat,
+                message_id=src_msg,
+                caption=caption,
+                protect_content=protect_content,
+                reply_markup=reply_markup
+            )
+        except Exception as e:
+            logger.exception(e)
+    return await client.send_cached_media(
+        chat_id=chat_id,
+        file_id=file_id,
+        caption=caption,
+        protect_content=protect_content,
+        reply_markup=reply_markup
+    )
+
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
     try:
@@ -357,8 +385,10 @@ async def start(client, message):
                 reply_markup=InlineKeyboardMarkup(button)
             else:
                 reply_markup = None
-            msg = await client.send_cached_media(
+            msg = await deliver_file(
+                client,
                 chat_id=message.from_user.id,
+                files=files1,
                 file_id=file_id,
                 caption=f_caption,
                 protect_content=True if pre == 'allfilesp' else False,
@@ -472,8 +502,10 @@ async def start(client, message):
         reply_markup=InlineKeyboardMarkup(button)
     else:
         reply_markup = None
-    msg = await client.send_cached_media(
+    msg = await deliver_file(
+        client,
         chat_id=message.from_user.id,
+        files=files,
         file_id=file_id,
         caption=f_caption,
         protect_content=True if pre == 'filep' else False,
