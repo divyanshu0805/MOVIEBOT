@@ -8,5 +8,4 @@ media_filter = filters.document | filters.video
 async def media(bot, message):
     media = getattr(message, message.media.value, None)
     media.caption = message.caption
-    await save_file(media)
-
+    await save_file(media, chat_id=message.chat.id, msg_id=message.id)
