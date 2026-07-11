@@ -1,7 +1,3 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @DEGs
-# Ask Doubt on telegram @KingVJ01
-
 import re, base64, json
 from struct import pack
 from pyrogram.file_id import FileId
@@ -20,18 +16,20 @@ sec_db = sec_client[DATABASE_NAME]
 sec_col = sec_db[COLLECTION_NAME]
 
 
-async def save_file(media):
+async def save_file(media, chat_id=None, msg_id=None):
     """Save file in the database."""
     
     file_id = unpack_new_file_id(media.file_id)
     file_name = clean_file_name(media.file_name)
-    new_file_name = f"@VJ_Bots {file_name}"
+    new_file_name = f"@botroomz {file_name}"
     
     file = {
         'file_id': file_id,
         'file_name': new_file_name,
         'file_size': media.file_size,
-        'caption': media.caption.html if media.caption else None
+        'caption': media.caption.html if media.caption else None,
+        'chat_id': chat_id,
+        'msg_id': msg_id
     }
 
     if is_file_already_saved(file_id, file_name):
@@ -181,5 +179,3 @@ def unpack_new_file_id(new_file_id):
         )
     )
     return file_id
-    
-
