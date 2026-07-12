@@ -1,17 +1,17 @@
 import re, base64, json
 from struct import pack
 from pyrogram.file_id import FileId
-from pymongo import MongoClient
+import motor.motor_asyncio
 from pymongo.errors import DuplicateKeyError
 from info import FILE_DB_URI, SEC_FILE_DB_URI, DATABASE_NAME, COLLECTION_NAME, MULTIPLE_DATABASE, USE_CAPTION_FILTER, MAX_B_TN
 
-# First Database For File Saving 
-client = MongoClient(FILE_DB_URI)
+# First Database For File Saving (async, isse bot slow/frozen nahi hota)
+client = motor.motor_asyncio.AsyncIOMotorClient(FILE_DB_URI)
 db = client[DATABASE_NAME]
 col = db[COLLECTION_NAME]
 
 # Second Database For File Saving
-sec_client = MongoClient(SEC_FILE_DB_URI)
+sec_client = motor.motor_asyncio.AsyncIOMotorClient(SEC_FILE_DB_URI)
 sec_db = sec_client[DATABASE_NAME]
 sec_col = sec_db[COLLECTION_NAME]
 
@@ -32,11 +32,11 @@ async def save_file(media, chat_id=None, msg_id=None):
         'msg_id': msg_id
     }
 
-    if is_file_already_saved(file_id, file_name):
+    if await is_file_already_saved(file_id, file_name):
         return False, 0
 
     try:
-        col.insert_one(file)
+        await col.insert_one(file)
         print(f"{file_name} is successfully saved.")
         return True, 1
     except DuplicateKeyError:
@@ -45,7 +45,7 @@ async def save_file(media, chat_id=None, msg_id=None):
     except:
         if MULTIPLE_DATABASE:
             try:
-                sec_col.insert_one(file)
+                await sec_col.insert_one(file)
                 print(f"{file_name} is successfully saved.")
                 return True, 1
             except DuplicateKeyError:
@@ -71,13 +71,13 @@ def add_space_between_e_and_number(input_string):
     output_string = re.sub(r'(e|E)([0-9])', r'1 2', input_string)
     return output_string
     
-def is_file_already_saved(file_id, file_name):
+async def is_file_already_saved(file_id, file_name):
     """Check if the file is already saved in either collection."""
     found1 = {'file_name': file_name}
     found = {'file_id': file_id}
 
     for collection in [col, sec_col]:
-        if collection.find_one(found1) or collection.find_one(found):
+        if await collection.find_one(found1) or await collection.find_one(found):
             print(f"{file_name} is already saved.")
             return True
             
@@ -103,17 +103,17 @@ async def get_search_results(chat_id, query, file_type=None, max_results=10, off
         cursor1 = col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
         cursor2 = sec_col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
         
-        for file in cursor1:
+        async for file in cursor1:
             files.append(file)
-        for file in cursor2:
+        async for file in cursor2:
             files.append(file)
     else:
         cursor = col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
         
-        for file in cursor:
+        async for file in cursor:
             files.append(file)
 
-    total_results = col.count_documents(filter) if not MULTIPLE_DATABASE else (col.count_documents(filter) + sec_col.count_documents(filter))
+    total_results = await col.count_documents(filter) if not MULTIPLE_DATABASE else ((await col.count_documents(filter)) + (await sec_col.count_documents(filter)))
     next_offset = "" if (offset + max_results) >= total_results else (offset + max_results)
 
     return files, next_offset, total_results
@@ -138,20 +138,29 @@ async def get_bad_files(query, file_type=None, use_filter=False):
     if USE_CAPTION_FILTER:
         filter_criteria = {'$or': [filter_criteria, {'caption': regex}]}
 
-    def count_documents(collection):
-        return collection.count_documents(filter_criteria)
+    async def count_documents(collection):
+        return await collection.count_documents(filter_criteria)
 
-    total_results = (count_documents(col) + count_documents(sec_col) if MULTIPLE_DATABASE else count_documents(col))
+    if MULTIPLE_DATABASE:
+        total_results = (await count_documents(col)) + (await count_documents(sec_col))
+    else:
+        total_results = await count_documents(col)
 
-    def find_documents(collection):
-        return list(collection.find(filter_criteria))
+    async def find_documents(collection):
+        return [file async for file in collection.find(filter_criteria)]
 
-    files = (find_documents(col) + find_documents(sec_col) if MULTIPLE_DATABASE else find_documents(col))
+    if MULTIPLE_DATABASE:
+        files = (await find_documents(col)) + (await find_documents(sec_col))
+    else:
+        files = await find_documents(col)
 
     return files, total_results
 
 async def get_file_details(query):
-    return col.find_one({'file_id': query}) or sec_col.find_one({'file_id': query})
+    file = await col.find_one({'file_id': query})
+    if not file:
+        file = await sec_col.find_one({'file_id': query})
+    return file
 
 def encode_file_id(s: bytes) -> str:
     r = b""

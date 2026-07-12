@@ -3,7 +3,6 @@ from pyrogram import Client, types
 from info import *
 from utils import temp
 from typing import Union, Optional, AsyncGenerator
-from aiohttp import web
 
 
 class DEGsXBot(Client):
@@ -62,7 +61,4 @@ class DEGsXBot(Client):
                 current += 1
       
 DEGsBot = DEGsXBot()
-
-multi_clients = {}
-work_loads = {}
 

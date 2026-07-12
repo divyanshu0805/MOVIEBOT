@@ -66,7 +66,6 @@ S_DB_URI = environ.get('S_DB_URI', "")
 GRP_LNK = environ.get('GRP_LNK', 'https://t.me/botcolony')
 CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/botroomz')
 SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'botroomzz')
-OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/medevu')
 
 # Auth Groups — bot sirf inhi groups mein kaam karega (khali = sabhi groups)
 # Multiple IDs space se alag karein: "-100123456 -100789012"
@@ -79,7 +78,6 @@ SEARCH_GC_NAME = environ.get('SEARCH_GC_NAME', 'Movie Search Group')
 
 # Feature Toggles
 AI_SPELL_CHECK = bool(environ.get('AI_SPELL_CHECK', True))
-PM_SEARCH = bool(environ.get('PM_SEARCH', False))
 BUTTON_MODE = bool(environ.get('BUTTON_MODE', True))
 MAX_BTN = bool(environ.get('MAX_BTN', True))
 IS_TUTORIAL = bool(environ.get('IS_TUTORIAL', False))
@@ -112,7 +110,6 @@ TUTORIAL = environ.get('TUTORIAL', '')
 # Others
 CACHE_TIME = int(environ.get('CACHE_TIME', 1800))
 MAX_B_TN = environ.get("MAX_B_TN", "5")
-PORT = environ.get("PORT", "8080")
 MSG_ALRT = environ.get('MSG_ALRT', 'Hello My Dear Friends ❤️')
 CUSTOM_FILE_CAPTION = environ.get("CUSTOM_FILE_CAPTION", f"{script.CAPTION}")
 BATCH_FILE_CAPTION = environ.get("BATCH_FILE_CAPTION", CUSTOM_FILE_CAPTION)
@@ -128,20 +125,10 @@ YEARS = ["1900", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998",
 
 # Online Stream and Download
 STREAM_MODE = bool(environ.get('STREAM_MODE', False))
-MULTI_CLIENT = False
-SLEEP_THRESHOLD = int(environ.get('SLEEP_THRESHOLD', '120'))
-PING_INTERVAL = int(environ.get("PING_INTERVAL", "1200"))
-if 'DYNO' in environ:
-    ON_HEROKU = True
-else:
-    ON_HEROKU = False
 URL = environ.get("URL", "https://funhub.indevs.in/")
 
 # Rename
 RENAME_MODE = bool(environ.get('RENAME_MODE', False))
-
-# Auto Approve
-AUTO_APPROVE_MODE = bool(environ.get('AUTO_APPROVE_MODE', False))
 
 # Reactions
 REACTIONS = ["🤝", "😇", "🤗", "😍", "👍", "🎅", "😐", "🥰", "🤩", "😱", "🤣", "😘", "👏", "😛", "😈", "🎉", "⚡️", "🫡", "🤓", "😎", "🏆", "🔥", "🤭", "🌚", "🆒", "👻", "😁"]

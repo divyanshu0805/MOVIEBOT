@@ -14,12 +14,8 @@ from utils import temp
 from typing import Union, Optional, AsyncGenerator
 from Script import script 
 from datetime import date, datetime 
-from aiohttp import web
-from plugins import web_server
 
 from DEGs.bot import DEGsBot
-from DEGs.util.keepalive import ping_server
-from DEGs.bot.clients import initialize_clients
 
 ppath = "plugins/*.py"
 files = glob.glob(ppath)
@@ -31,7 +27,6 @@ async def start():
     print('\n')
     print('Initalizing Your Bot')
     bot_info = await DEGsBot.get_me()
-    await initialize_clients()
     for name in files:
         with open(name) as a:
             patt = Path(a.name)
@@ -43,8 +38,6 @@ async def start():
             spec.loader.exec_module(load)
             sys.modules["plugins." + plugin_name] = load
             print("DEGs Bot Imported => " + plugin_name)
-    if ON_HEROKU:
-        asyncio.create_task(ping_server())
     b_users, b_chats = await db.get_banned()
     temp.BANNED_USERS = b_users
     temp.BANNED_CHATS = b_chats
@@ -73,10 +66,6 @@ async def start():
         await k.delete()
     except:
         print("Make Your Bot Admin In Force Subscribe Channel With Full Rights")
-    app = web.AppRunner(await web_server())
-    await app.setup()
-    bind_address = "0.0.0.0"
-    await web.TCPSite(app, bind_address, PORT).start()
     await idle()
 
 
