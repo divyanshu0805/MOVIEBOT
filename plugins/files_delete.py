@@ -1,8 +1,4 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @DEGs
-# Ask Doubt on telegram @KingVJ01
-
-import re, logging
+#import re, logging
 from pyrogram import Client, filters
 from info import DELETE_CHANNELS
 from database.ia_filterdb import col, sec_col, unpack_new_file_id
