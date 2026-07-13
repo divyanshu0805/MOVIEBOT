@@ -71,7 +71,11 @@ Cᴏᴍᴍᴀɴᴅs Aɴᴅ Usᴀɢᴇ:
 • /broadcast - <code>ᴛᴏ ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴀ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ᴀʟʟ ᴜꜱᴇʀꜱ</code>
 • /grp_broadcast - <code>Tᴏ ʙʀᴏᴀᴅᴄᴀsᴛ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ᴀʟʟ ᴄᴏɴɴᴇᴄᴛᴇᴅ ɢʀᴏᴜᴘs.</code>
 • /request - <code>Tᴏ sᴇɴᴅ ᴀ Mᴏᴠɪᴇ/Sᴇʀɪᴇs ʀᴇᴏ̨ᴜᴇsᴛ ᴛᴏ ʙᴏᴛ ᴀᴅᴍɪɴs. Oɴʟʏ ᴡᴏʀᴋs ᴏɴ sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ. [Tʜɪs Cᴏᴍᴍᴀɴᴅ Cᴀɴ Bᴇ Usᴇᴅ Bʏ Aɴʏᴏɴᴇ]</code>
-• /deletefiles - <code>Tᴏ ᴅᴇʟᴇᴛᴇ CᴀᴍRɪᴘ ᴀɴᴅ PʀᴇDVD Fɪʟᴇs ғʀᴏᴍ ᴛʜᴇ ʙᴏᴛ's ᴅᴀᴛᴀʙᴀsᴇ.</code>"""
+• /deletefiles - <code>Tᴏ ᴅᴇʟᴇᴛᴇ CᴀᴍRɪᴘ ᴀɴᴅ PʀᴇDVD Fɪʟᴇs ғʀᴏᴍ ᴛʜᴇ ʙᴏᴛ's ᴅᴀᴛᴀʙᴀsᴇ.</code>
+• /deleteall - <code>Dᴇʟᴇᴛᴇ ᴀʟʟ ғɪʟᴇs (ɴᴏ ᴀʀɢs), ᴏʀ /deleteall &lt;channel_id&gt; ᴛᴏ ᴡɪᴘᴇ ᴀ sɪɴɢʟᴇ ᴄʜᴀɴɴᴇʟ's ᴅᴀᴛᴀ, ᴏʀ /deleteall &lt;keyword&gt; ᴛᴏ ᴅᴇʟᴇᴛᴇ ᴍᴀᴛᴄʜɪɴɢ ғɪʟᴇs.</code>
+• /setfilescaption - <code>Sᴇᴛ ᴀ ᴄᴏᴍᴍᴏɴ ᴄᴀᴘᴛɪᴏɴ ғᴏʀ ᴀʟʟ ᴇxɪsᴛɪɴɢ + ғᴜᴛᴜʀᴇ ɪɴᴅᴇxᴇᴅ ғɪʟᴇs.</code>
+• /removefilescaption - <code>Rᴇᴍᴏᴠᴇ ᴛʜᴇ ᴄᴏᴍᴍᴏɴ ᴄᴀᴘᴛɪᴏɴ sᴇᴛᴛɪɴɢ.</code>
+• /filescaption - <code>Vɪᴇᴡ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴄᴏᴍᴍᴏɴ ᴄᴀᴘᴛɪᴏɴ.</code>"""
 
     SEC_STATUS_TXT = """<b>★ Tᴏᴛᴀʟ Usᴇʀs: <code>{}</code>
 ★ Tᴏᴛᴀʟ Cʜᴀᴛs: <code>{}</code>
