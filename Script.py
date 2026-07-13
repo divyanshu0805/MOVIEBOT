@@ -176,8 +176,9 @@ Usᴇʀɴᴀᴍᴇ - {}"""
 
 ⚙️ Sɪᴢᴇ : {file_size}
 
-📢 Cʜᴀɴɴᴇʟ : @{main_channel}
-🔍 Sᴇᴀʀᴄʜ Gʀᴏᴜᴘ : {search_gc_name} → {grp_link}
+🎬 Mᴏᴠɪᴇ Uᴘᴅᴀᴛᴇs : @DEGCinema
+🤖 Bᴏᴛ Uᴘᴅᴀᴛᴇs : @botroomz
+🌐 Mᴏᴠɪᴇ Sɪᴛᴇ : Funhub.indevs.in
 </b>""" 
 
     IMDB_TEMPLATE_TXT = """
