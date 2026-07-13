@@ -621,6 +621,17 @@ async def set_files_caption(bot, message):
             quote=True
         )
     caption = message.reply_to_message.text if message.reply_to_message else message.text.split(None, 1)[1]
+
+    # Telegram media caption limit 1024 characters hai. Filename/size wrapper text ke liye
+    # kuch space chhod ke, humne safe limit 700 characters rakhi hai.
+    if len(caption) > 700:
+        return await message.reply_text(
+            f"<b>⚠️ Caption bahut lamba hai ({len(caption)} characters).</b>\n\n"
+            f"Telegram media caption ki limit <b>1024 characters</b> hai, aur file ke naam/size wali "
+            f"extra text bhi isme judti hai, isliye caption <b>700 characters se chota</b> rakho.",
+            quote=True
+        )
+
     msg = await message.reply_text("Applying caption to all files, please wait...", quote=True)
     updated = await set_common_caption(caption)
     await msg.edit(f"<b>{updated}</b> files ka caption successfully update ho gaya.\n\nAb se naye index hone wali files pe bhi yehi caption automatically lagegi.")
