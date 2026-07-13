@@ -15,6 +15,31 @@ sec_client = motor.motor_asyncio.AsyncIOMotorClient(SEC_FILE_DB_URI)
 sec_db = sec_client[DATABASE_NAME]
 sec_col = sec_db[COLLECTION_NAME]
 
+# Choti si settings collection - common caption yaha store hoti hai
+settings_col = db['bot_settings']
+
+
+async def set_common_caption(caption):
+    """Common caption ko save karo aur DB me maujood SAARI files pe turant apply karo."""
+    await settings_col.update_one(
+        {'_id': 'common_caption'},
+        {'$set': {'value': caption}},
+        upsert=True
+    )
+    result1 = await col.update_many({}, {'$set': {'caption': caption}})
+    result2 = await sec_col.update_many({}, {'$set': {'caption': caption}})
+    return result1.modified_count + result2.modified_count
+
+
+async def remove_common_caption():
+    """Common caption setting hata do (naye files pe ab apply nahi hogi)."""
+    await settings_col.delete_one({'_id': 'common_caption'})
+
+
+async def get_common_caption():
+    doc = await settings_col.find_one({'_id': 'common_caption'})
+    return doc['value'] if doc else None
+
 
 async def save_file(media, chat_id=None, msg_id=None):
     """Save file in the database."""
@@ -22,12 +47,15 @@ async def save_file(media, chat_id=None, msg_id=None):
     file_id = unpack_new_file_id(media.file_id)
     file_name = clean_file_name(media.file_name)
     new_file_name = f"@botroomz {file_name}"
+
+    common_caption = await get_common_caption()
+    caption = common_caption if common_caption else (media.caption.html if media.caption else None)
     
     file = {
         'file_id': file_id,
         'file_name': new_file_name,
         'file_size': media.file_size,
-        'caption': media.caption.html if media.caption else None,
+        'caption': caption,
         'chat_id': chat_id,
         'msg_id': msg_id
     }
