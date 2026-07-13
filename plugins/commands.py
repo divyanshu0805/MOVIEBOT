@@ -3,7 +3,7 @@ from Script import script
 from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from pyrogram.types import *
-from database.ia_filterdb import col, sec_col, get_file_details, unpack_new_file_id, get_bad_files
+from database.ia_filterdb import col, sec_col, get_file_details, unpack_new_file_id, get_bad_files, set_common_caption, remove_common_caption, get_common_caption
 from database.users_chats_db import db
 from database.join_reqs import JoinReqs
 from info import REACTIONS, CHANNELS, REQUEST_TO_JOIN_MODE, TRY_AGAIN_BTN, ADMINS, SHORTLINK_MODE, STREAM_MODE, AUTH_CHANNEL, LOG_CHANNEL, PICS, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, CHNL_LNK, GRP_LNK, REQST_CHANNEL, SUPPORT_CHAT, MAX_B_TN, VERIFY, SHORTLINK_API, SHORTLINK_URL, TUTORIAL, VERIFY_TUTORIAL, IS_TUTORIAL, URL, MAIN_CHANNEL_USERNAME, SEARCH_GC_NAME, AUTH_GROUPS
@@ -611,13 +611,95 @@ async def delete(bot, message):
                 await msg.edit('File not found in database')
 
 
+@Client.on_message(filters.command('setfilescaption') & filters.user(ADMINS))
+async def set_files_caption(bot, message):
+    if len(message.command) < 2 and not message.reply_to_message:
+        return await message.reply_text(
+            "<b>Usage:</b> <code>/setfilescaption Your common caption here</code>\n\n"
+            "Ye caption DB me maujood <b>saari existing files</b> pe turant apply ho jayegi, "
+            "aur aage jitni bhi <b>naya files index</b> hongi unpe bhi automatically yehi caption lagegi.",
+            quote=True
+        )
+    caption = message.reply_to_message.text if message.reply_to_message else message.text.split(None, 1)[1]
+    msg = await message.reply_text("Applying caption to all files, please wait...", quote=True)
+    updated = await set_common_caption(caption)
+    await msg.edit(f"<b>{updated}</b> files ka caption successfully update ho gaya.\n\nAb se naye index hone wali files pe bhi yehi caption automatically lagegi.")
+
+
+@Client.on_message(filters.command('removefilescaption') & filters.user(ADMINS))
+async def remove_files_caption(bot, message):
+    await remove_common_caption()
+    await message.reply_text(
+        "Common caption hata diya gaya hai.\n\nExisting files ka caption (jo abhi set tha) waisa hi rahega, "
+        "bas ab naye index hone wali files pe ye automatically apply nahi hogi (unki original caption use hogi).",
+        quote=True
+    )
+
+
+@Client.on_message(filters.command('filescaption') & filters.user(ADMINS))
+async def view_files_caption(bot, message):
+    caption = await get_common_caption()
+    if caption:
+        await message.reply_text(f"<b>Current common caption:</b>\n\n{caption}", quote=True)
+    else:
+        await message.reply_text("Koi common caption set nahi hai abhi.", quote=True)
+
+
 @Client.on_message(filters.command('deleteall') & filters.user(ADMINS))
 async def delete_all_index(bot, message):
+    args = message.text.split(None, 1)
+
+    # Mode 1: /deleteall  -> poora database delete (sab files)
+    if len(args) == 1:
+        await message.reply_text(
+            'This will delete ALL indexed files from the database.\nDo you want to continue??',
+            reply_markup=InlineKeyboardMarkup(
+                [[
+                    InlineKeyboardButton(text="YES", callback_data="autofilter_delete")
+                ],[
+                    InlineKeyboardButton(text="CANCEL", callback_data="close_data")
+                ]]
+            ),
+            quote=True,
+        )
+        return
+
+    arg = args[1].strip()
+
+    # Mode 2: /deleteall <channel_id>  -> sirf us channel se index hui files ka DB record delete
+    # (channel ke asli messages delete nahi honge, sirf bot ke database se hatega)
+    if re.fullmatch(r'-?\d+', arg):
+        chan_id = int(arg)
+        count = await col.count_documents({'chat_id': chan_id})
+        count += await sec_col.count_documents({'chat_id': chan_id})
+        if count == 0:
+            await message.reply_text(f"<code>{chan_id}</code> se koi bhi indexed file database me nahi mili.", quote=True)
+            return
+        await message.reply_text(
+            f"Channel/Group <code>{chan_id}</code> se index hui <b>{count}</b> files database se delete ho jayengi.\n"
+            f"(Channel ke asli messages touch nahi honge, sirf bot ke database se hatengi.)\n\nContinue karein?",
+            reply_markup=InlineKeyboardMarkup(
+                [[
+                    InlineKeyboardButton(text="YES", callback_data=f"delchanneldb#{chan_id}")
+                ],[
+                    InlineKeyboardButton(text="CANCEL", callback_data="close_data")
+                ]]
+            ),
+            quote=True,
+        )
+        return
+
+    # Mode 3: /deleteall <keyword>  -> keyword se match hone wali files delete
+    keyword = arg
+    files, total = await get_bad_files(keyword)
+    if total == 0:
+        await message.reply_text(f"'<code>{keyword}</code>' se match hone wali koi file nahi mili.", quote=True)
+        return
     await message.reply_text(
-        'This will delete all indexed files.\nDo you want to continue??',
+        f"'<code>{keyword}</code>' se match hone wali <b>{total}</b> files database se delete ho jayengi.\n\nContinue karein?",
         reply_markup=InlineKeyboardMarkup(
             [[
-                InlineKeyboardButton(text="YES", callback_data="autofilter_delete")
+                InlineKeyboardButton(text="YES", callback_data=f"delkeyworddb#{keyword}")
             ],[
                 InlineKeyboardButton(text="CANCEL", callback_data="close_data")
             ]]
@@ -632,6 +714,28 @@ async def delete_all_index_confirm(bot, query):
     await sec_col.drop()
     await query.answer('Piracy Is Crime')
     await query.message.edit('Succesfully Deleted All The Indexed Files.')
+
+
+@Client.on_callback_query(filters.regex(r'^delchanneldb#'))
+async def delete_channel_db_confirm(bot, query):
+    chan_id = int(query.data.split("#", 1)[1])
+    result1 = await col.delete_many({'chat_id': chan_id})
+    result2 = await sec_col.delete_many({'chat_id': chan_id})
+    total_deleted = result1.deleted_count + result2.deleted_count
+    await query.answer('Done !')
+    await query.message.edit(f"Channel/Group <code>{chan_id}</code> ki <b>{total_deleted}</b> files database se successfully delete ho gayi.")
+
+
+@Client.on_callback_query(filters.regex(r'^delkeyworddb#'))
+async def delete_keyword_db_confirm(bot, query):
+    keyword = query.data.split("#", 1)[1]
+    files, total = await get_bad_files(keyword)
+    file_ids = [f['file_id'] for f in files]
+    result1 = await col.delete_many({'file_id': {'$in': file_ids}})
+    result2 = await sec_col.delete_many({'file_id': {'$in': file_ids}})
+    total_deleted = result1.deleted_count + result2.deleted_count
+    await query.answer('Done !')
+    await query.message.edit(f"'<code>{keyword}</code>' se match hone wali <b>{total_deleted}</b> files successfully delete ho gayi.")
 
 
 @Client.on_message(filters.command('settings'))
