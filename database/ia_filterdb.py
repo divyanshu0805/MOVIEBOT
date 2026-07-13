@@ -38,7 +38,15 @@ async def remove_common_caption():
 
 async def get_common_caption():
     doc = await settings_col.find_one({'_id': 'common_caption'})
-    return doc['value'] if doc else None
+    if not doc:
+        return None
+    caption = doc['value']
+    # Safety net: agar kisi tarah 700 se lamba caption save ho gaya ho (purana data),
+    # to use yaha automatically safe length tak truncate kar do taaki file delivery
+    # MEDIA_CAPTION_TOO_LONG error se crash na ho.
+    if len(caption) > 700:
+        caption = caption[:697] + "..."
+    return caption
 
 
 async def save_file(media, chat_id=None, msg_id=None):
