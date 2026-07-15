@@ -4,6 +4,7 @@ from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from pyrogram.types import *
 from database.ia_filterdb import col, sec_col, get_file_details, unpack_new_file_id, get_bad_files, set_common_caption, remove_common_caption, get_common_caption
+from database.channels_db import add_index_channel, remove_index_channel, get_index_channels
 from database.users_chats_db import db
 from database.join_reqs import JoinReqs
 from info import REACTIONS, CHANNELS, REQUEST_TO_JOIN_MODE, TRY_AGAIN_BTN, ADMINS, SHORTLINK_MODE, STREAM_MODE, AUTH_CHANNEL, LOG_CHANNEL, PICS, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, CHNL_LNK, GRP_LNK, REQST_CHANNEL, SUPPORT_CHAT, MAX_B_TN, VERIFY, SHORTLINK_API, SHORTLINK_URL, TUTORIAL, VERIFY_TUTORIAL, IS_TUTORIAL, URL, MAIN_CHANNEL_USERNAME, SEARCH_GC_NAME, AUTH_GROUPS
@@ -538,6 +539,81 @@ async def channel_info(bot, message):
             f.write(text)
         await message.reply_document(file)
         os.remove(file)
+
+
+@Client.on_message(filters.command('addchannel') & filters.user(ADMINS))
+async def add_index_channel_cmd(bot, message):
+    if len(message.command) != 2:
+        return await message.reply_text(
+            "<b>Usage:</b> <code>/addchannel -1001234567890</code>\n\n"
+            "Isse ye channel bot ki auto-index list me add ho jayega. Ab is channel me jab bhi "
+            "koi movie/file post hogi, bot use <b>automatically apne database me save kar lega</b> "
+            "\u2014 na koi env variable set karna, na redeploy karna.\n\n"
+            "<b>⚠️ Bot ko us channel me admin banana zaroori hai.</b>",
+            quote=True
+        )
+    try:
+        chan_id = int(message.command[1])
+    except ValueError:
+        return await message.reply_text("Channel ID sahi format me do (jaise <code>-1001234567890</code>).", quote=True)
+
+    try:
+        chat = await bot.get_chat(chan_id)
+    except Exception as e:
+        return await message.reply_text(f"Is channel ko access nahi kar paya: <code>{e}</code>\n\nPehle bot ko us channel me admin banao.", quote=True)
+
+    await add_index_channel(chan_id)
+    name = f"@{chat.username}" if chat.username else chat.title
+    status = await message.reply_text(
+        f"✅ <b>{name}</b> (<code>{chan_id}</code>) auto-index list me add ho gaya.\n\n"
+        f"Ab isme aage jo bhi naya file post hogi wo turant save hogi, aur is channel me "
+        f"<b>pehle se maujood purani files bhi index kar raha hu</b>, thoda time lagega...",
+        quote=True
+    )
+    try:
+        last_msg_id = 0
+        async for m in bot.get_chat_history(chan_id, limit=1):
+            last_msg_id = m.id
+        if last_msg_id:
+            from plugins.index import index_files_to_db
+            await index_files_to_db(last_msg_id, chan_id, status, bot)
+        else:
+            await status.edit(f"✅ <b>{name}</b> add ho gaya, lekin isme koi purani message nahi mili index karne ke liye.")
+    except Exception as e:
+        await status.edit(f"✅ <b>{name}</b> add ho gaya (naye files aage se save hongi), lekin purani files index karte waqt error aaya:\n<code>{e}</code>")
+
+
+@Client.on_message(filters.command('delchannel') & filters.user(ADMINS))
+async def del_index_channel_cmd(bot, message):
+    if len(message.command) != 2:
+        return await message.reply_text("<b>Usage:</b> <code>/delchannel -1001234567890</code>", quote=True)
+    try:
+        chan_id = int(message.command[1])
+    except ValueError:
+        return await message.reply_text("Channel ID sahi format me do.", quote=True)
+
+    removed = await remove_index_channel(chan_id)
+    if removed:
+        await message.reply_text(f"✅ <code>{chan_id}</code> auto-index list se hata diya gaya. (Pehle se index hui files DB me waisi hi rahengi.)", quote=True)
+    else:
+        await message.reply_text(f"<code>{chan_id}</code> auto-index list me mila hi nahi.", quote=True)
+
+
+@Client.on_message(filters.command(['indexchannels', 'listchannels']) & filters.user(ADMINS))
+async def list_index_channels_cmd(bot, message):
+    channels = await get_index_channels()
+    if not channels:
+        return await message.reply_text("Abhi tak koi channel <code>/addchannel</code> se add nahi kiya gaya hai.\n\n(Ye <code>CHANNELS</code> env variable wali static list se alag hai, wo <code>/channel</code> se dekh sakte ho.)", quote=True)
+
+    text = "📡 <b>Auto-Index Channels (DB se add kiye gaye):</b>\n"
+    for chan_id in channels:
+        try:
+            chat = await bot.get_chat(chan_id)
+            name = f"@{chat.username}" if chat.username else chat.title
+        except Exception:
+            name = "Unknown"
+        text += f"\n• {name} (<code>{chan_id}</code>)"
+    await message.reply_text(text, quote=True)
 
 
 @Client.on_message(filters.command('logs') & filters.user(ADMINS))
