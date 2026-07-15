@@ -75,7 +75,10 @@ Cᴏᴍᴍᴀɴᴅs Aɴᴅ Usᴀɢᴇ:
 • /deleteall - <code>Dᴇʟᴇᴛᴇ ᴀʟʟ ғɪʟᴇs (ɴᴏ ᴀʀɢs), ᴏʀ /deleteall &lt;channel_id&gt; ᴛᴏ ᴡɪᴘᴇ ᴀ sɪɴɢʟᴇ ᴄʜᴀɴɴᴇʟ's ᴅᴀᴛᴀ, ᴏʀ /deleteall &lt;keyword&gt; ᴛᴏ ᴅᴇʟᴇᴛᴇ ᴍᴀᴛᴄʜɪɴɢ ғɪʟᴇs.</code>
 • /setfilescaption - <code>Sᴇᴛ ᴀ ᴄᴏᴍᴍᴏɴ ᴄᴀᴘᴛɪᴏɴ ғᴏʀ ᴀʟʟ ᴇxɪsᴛɪɴɢ + ғᴜᴛᴜʀᴇ ɪɴᴅᴇxᴇᴅ ғɪʟᴇs.</code>
 • /removefilescaption - <code>Rᴇᴍᴏᴠᴇ ᴛʜᴇ ᴄᴏᴍᴍᴏɴ ᴄᴀᴘᴛɪᴏɴ sᴇᴛᴛɪɴɢ.</code>
-• /filescaption - <code>Vɪᴇᴡ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴄᴏᴍᴍᴏɴ ᴄᴀᴘᴛɪᴏɴ.</code>"""
+• /filescaption - <code>Vɪᴇᴡ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴄᴏᴍᴍᴏɴ ᴄᴀᴘᴛɪᴏɴ.</code>
+• /addchannel - <code>Aᴅᴅ ᴀ ᴄʜᴀɴɴᴇʟ ғᴏʀ ᴀᴜᴛᴏ-ɪɴᴅᴇxɪɴɢ ᴡɪᴛʜᴏᴜᴛ ʀᴇᴅᴇᴘʟᴏʏ. Usᴀɢᴇ: /addchannel -100xxxxxxxxxx</code>
+• /delchannel - <code>Rᴇᴍᴏᴠᴇ ᴀ ᴄʜᴀɴɴᴇʟ ғʀᴏᴍ ᴛʜᴇ ᴀᴜᴛᴏ-ɪɴᴅᴇx ʟɪsᴛ.</code>
+• /indexchannels - <code>Vɪᴇᴡ ᴀʟʟ ᴄʜᴀɴɴᴇʟs ᴀᴅᴅᴇᴅ ᴠɪᴀ /addchannel.</code>"""
 
     SEC_STATUS_TXT = """<b>★ Tᴏᴛᴀʟ Usᴇʀs: <code>{}</code>
 ★ Tᴏᴛᴀʟ Cʜᴀᴛs: <code>{}</code>
