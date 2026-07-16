@@ -1878,6 +1878,8 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )
     elif query.data == "admin":
         buttons = [[
+            InlineKeyboardButton('Nᴇxᴛ ➡️', callback_data='admin2')
+        ],[
             InlineKeyboardButton('⟸ Bᴀᴄᴋ', callback_data='help'),
             InlineKeyboardButton('ᴇxᴛʀᴀ', callback_data='extra')
         ]]
@@ -1889,6 +1891,24 @@ async def cb_handler(client: Client, query: CallbackQuery):
         reply_markup = InlineKeyboardMarkup(buttons)
         await query.message.edit_text(
             text=script.ADMIN_TXT,
+            reply_markup=reply_markup,
+            parse_mode=enums.ParseMode.HTML
+        )
+    elif query.data == "admin2":
+        buttons = [[
+            InlineKeyboardButton('⬅️ Bᴀᴄᴋ', callback_data='admin')
+        ],[
+            InlineKeyboardButton('⟸ Hᴇʟᴘ Mᴇɴᴜ', callback_data='help'),
+            InlineKeyboardButton('ᴇxᴛʀᴀ', callback_data='extra')
+        ]]
+        await client.edit_message_media(
+            query.message.chat.id, 
+            query.message.id, 
+            InputMediaPhoto(random.choice(PICS))
+        )
+        reply_markup = InlineKeyboardMarkup(buttons)
+        await query.message.edit_text(
+            text=script.ADMIN_TXT2,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
@@ -2614,4 +2634,3 @@ async def advantage_spell_chok(client, name, msg, reply_msg, vj_search):
             if settings['auto_delete']:
                 await asyncio.sleep(600)
                 await spell_check_del.delete()
-
