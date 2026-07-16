@@ -2,7 +2,7 @@ import datetime, time, asyncio
 from pyrogram import Client, filters
 from database.users_chats_db import db
 from info import ADMINS
-from utils import broadcast_messages, broadcast_messages_group
+from utils import broadcast_messages
         
 @Client.on_message(filters.command("broadcast") & filters.user(ADMINS))
 async def pm_broadcast(bot, message):
@@ -43,33 +43,3 @@ async def pm_broadcast(bot, message):
         await sts.edit(f"Broadcast Completed:\nCompleted in {time_taken} seconds.\n\nTotal Users: {total_users}\nCompleted: {done} / {total_users}\nSuccess: {success}\nBlocked: {blocked}\nDeleted: {deleted}")
     except Exception as e:
         print(f"error: {e}")
-
-
-
-@Client.on_message(filters.command("grp_broadcast") & filters.user(ADMINS))
-async def broadcast_group(bot, message):
-    b_msg = await bot.ask(chat_id = message.from_user.id, text = "Now Send Me Your Broadcast Message")
-    groups = await db.get_all_chats()
-    sts = await message.reply_text(
-        text='Broadcasting your messages To Groups...'
-    )
-    start_time = time.time()
-    total_groups = await db.total_chat_count()
-    done = 0
-    failed = 0
-
-    success = 0
-    async for group in groups:
-        pti, sh = await broadcast_messages_group(int(group['id']), b_msg)
-        if pti:
-            success += 1
-        elif sh == "Error":
-                failed += 1
-        done += 1
-        if not done % 20:
-            await sts.edit(f"Broadcast in progress:\n\nTotal Groups {total_groups}\nCompleted: {done} / {total_groups}\nSuccess: {success}")    
-    time_taken = datetime.timedelta(seconds=int(time.time()-start_time))
-    await sts.edit(f"Broadcast Completed:\nCompleted in {time_taken} seconds.\n\nTotal Groups {total_groups}\nCompleted: {done} / {total_groups}\nSuccess: {success}")
-        
-
-
