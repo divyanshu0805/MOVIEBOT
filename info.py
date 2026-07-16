@@ -15,6 +15,8 @@ PICS = (environ.get('PICS', 'https://graph.org/file/40d029b5984058f055881-a592b5
 
 # Admins & Users
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '').split()]
+sudo_users = [int(user) if id_pattern.search(user) else user for user in environ.get('SUDO_USERS', '').split()]
+SUDO_USERS = sudo_users + ADMINS
 auth_users = [int(user) if id_pattern.search(user) else user for user in environ.get('AUTH_USERS', '').split()]
 AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 
