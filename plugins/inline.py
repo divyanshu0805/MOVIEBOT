@@ -3,7 +3,7 @@ from pyrogram import Client, emoji, filters
 from pyrogram.errors.exceptions.bad_request_400 import QueryIdInvalid
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedDocument, InlineQuery
 from database.ia_filterdb import get_search_results
-from utils import is_subscribed, get_size, temp
+from utils import is_subscribed, get_size, temp, safe_caption
 from info import CACHE_TIME, AUTH_USERS, AUTH_CHANNEL, CUSTOM_FILE_CAPTION
 from database.connections_mdb import active_connection
 
@@ -72,7 +72,7 @@ async def answer(bot, query):
             InlineQueryResultCachedDocument(
                 title=file['file_name'],
                 document_file_id=file['file_id'],
-                caption=f_caption,
+                caption=safe_caption(f_caption),
                 description=f'Size: {get_size(file["file_size"])}',
                 reply_markup=reply_markup
             )
@@ -114,8 +114,3 @@ def get_reply_markup(query):
         InlineKeyboardButton('Search again', switch_inline_query_current_chat=query)
     ]]
     return InlineKeyboardMarkup(buttons)
-
-
-
-
-
