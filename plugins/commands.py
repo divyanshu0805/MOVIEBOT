@@ -8,7 +8,7 @@ from database.channels_db import add_index_channel, remove_index_channel, get_in
 from database.users_chats_db import db
 from database.join_reqs import JoinReqs
 from info import REACTIONS, CHANNELS, REQUEST_TO_JOIN_MODE, TRY_AGAIN_BTN, ADMINS, SHORTLINK_MODE, STREAM_MODE, AUTH_CHANNEL, LOG_CHANNEL, PICS, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, CHNL_LNK, GRP_LNK, REQST_CHANNEL, SUPPORT_CHAT, MAX_B_TN, VERIFY, SHORTLINK_API, SHORTLINK_URL, TUTORIAL, VERIFY_TUTORIAL, IS_TUTORIAL, URL, MAIN_CHANNEL_USERNAME, SEARCH_GC_NAME, AUTH_GROUPS
-from utils import get_settings, pub_is_subscribed, get_size, is_subscribed, save_group_settings, temp, verify_user, check_token, check_verification, get_token, get_shortlink, get_tutorial, get_seconds
+from utils import get_settings, pub_is_subscribed, get_size, is_subscribed, save_group_settings, temp, verify_user, check_token, check_verification, get_token, get_shortlink, get_tutorial, get_seconds, safe_caption
 from database.connections_mdb import active_connection
 from urllib.parse import quote_plus
 from DEGs.util.file_properties import get_name, get_hash, get_media_file_size
@@ -212,7 +212,7 @@ async def start(client, message):
                 msg = await client.send_cached_media(
                     chat_id=message.from_user.id,
                     file_id=msg.get("file_id"),
-                    caption=f_caption,
+                    caption=safe_caption(f_caption),
                     protect_content=msg.get('protect', False),
                     reply_markup=reply_markup
                 )
@@ -223,7 +223,7 @@ async def start(client, message):
                 msg = await client.send_cached_media(
                     chat_id=message.from_user.id,
                     file_id=msg.get("file_id"),
-                    caption=f_caption,
+                    caption=safe_caption(f_caption),
                     protect_content=msg.get('protect', False),
                     reply_markup=InlineKeyboardMarkup(button)
                 )
@@ -260,7 +260,7 @@ async def start(client, message):
                 f_caption = getattr(msg, 'caption', file_name)
                 if BATCH_FILE_CAPTION:
                     try:
-                        f_caption=BATCH_FILE_CAPTION.format(file_name=file_name, file_size='' if size is None else size, file_caption=f_caption)
+                        f_caption=BATCH_FILE_CAPTION.format(file_name=file_name, file_size='' if size is None else size, file_caption=safe_caption(f_caption))
                     except:
                         f_caption = getattr(msg, 'caption', '')
                 file_id = file.file_id
@@ -281,10 +281,10 @@ async def start(client, message):
                 else:
                     reply_markup = None
                 try:
-                    p = await msg.copy(message.chat.id, caption=f_caption, protect_content=True if protect == "/pbatch" else False, reply_markup=reply_markup)
+                    p = await msg.copy(message.chat.id, caption=safe_caption(f_caption), protect_content=True if protect == "/pbatch" else False, reply_markup=reply_markup)
                 except FloodWait as e:
                     await asyncio.sleep(e.value)
-                    p = await msg.copy(message.chat.id, caption=f_caption, protect_content=True if protect == "/pbatch" else False, reply_markup=reply_markup)
+                    p = await msg.copy(message.chat.id, caption=safe_caption(f_caption), protect_content=True if protect == "/pbatch" else False, reply_markup=reply_markup)
                 except:
                     continue
             elif msg.empty:
@@ -397,7 +397,7 @@ async def start(client, message):
                 chat_id=message.from_user.id,
                 files=files1,
                 file_id=file_id,
-                caption=f_caption,
+                caption=safe_caption(f_caption),
                 protect_content=True if pre == 'allfilesp' else False,
                 reply_markup=reply_markup
             )
@@ -469,7 +469,7 @@ async def start(client, message):
                     f_caption=CUSTOM_FILE_CAPTION.format(file_name= '' if title is None else title, file_size='' if size is None else size, file_caption='')
                 except:
                     return
-            await msg.edit_caption(caption=f_caption)
+            await msg.edit_caption(caption=safe_caption(f_caption))
             btn = [[InlineKeyboardButton("✅ ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ ✅", callback_data=f'del#{file_id}')]]
             k = await msg.reply(text=f"<blockquote><b><u>❗️❗️❗️IMPORTANT❗️️❗️❗️</u></b>\n\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ <b><u>10 mins</u> 🫥 <i></b>(ᴅᴜᴇ ᴛᴏ ᴄᴏᴘʏʀɪɢʜᴛ ɪssᴜᴇs)</i>.\n\n<b><i>ᴘʟᴇᴀsᴇ ғᴏʀᴡᴀʀᴅ ᴛʜɪs ᴍᴇssᴀɢᴇ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ᴏʀ ᴀɴʏ ᴘʀɪᴠᴀᴛᴇ ᴄʜᴀᴛ.</i></b></blockquote>")
             await asyncio.sleep(600)
@@ -514,7 +514,7 @@ async def start(client, message):
         chat_id=message.from_user.id,
         files=files,
         file_id=file_id,
-        caption=f_caption,
+        caption=safe_caption(f_caption),
         protect_content=True if pre == 'filep' else False,
         reply_markup=reply_markup
     )
