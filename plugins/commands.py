@@ -23,6 +23,12 @@ async def deliver_file(client, chat_id, files, file_id, caption, protect_content
     unke liye copy_message use karo — ye hamesha reliable hai (fresh file_reference khud resolve hota hai).
     Purane records (jinme ye fields nahi hai) ke liye purane send_cached_media pe fallback karo.
     """
+    # Telegram media caption ki hard limit 1024 characters hai. DB me chahe kuch bhi lamba caption
+    # ho (purana ya kisi bhi wajah se), yahan hamesha safe length tak trim kar do taaki
+    # MEDIA_CAPTION_TOO_LONG error se file delivery kabhi crash na ho.
+    if caption and len(caption) > 1024:
+        caption = caption[:1021] + "..."
+
     src_chat = files.get("chat_id") if isinstance(files, dict) else None
     src_msg = files.get("msg_id") if isinstance(files, dict) else None
     if src_chat and src_msg:
