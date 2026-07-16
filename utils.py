@@ -18,6 +18,15 @@ logger.setLevel(logging.INFO)
 join_db = JoinReqs
 BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))")
 
+def safe_caption(text):
+    """Telegram media caption ki hard limit 1024 characters hai. Ye final rendered caption
+    string (file name, common caption, template - kuch bhi mix hokar bana ho) ko hamesha
+    is limit ke andar rakhta hai, taaki MEDIA_CAPTION_TOO_LONG error kabhi na aaye,
+    chahe caption kahi se bhi (filename, DB caption, template) bana ho."""
+    if text and len(text) > 1024:
+        return text[:1021] + "..."
+    return text
+
 _imdb_instance = None
 def get_imdb():
     # Lazy-load Cinemagoer — instantiating it at import time can crash on some
@@ -629,7 +638,7 @@ async def send_all(bot, userid, files, ident, chat_id, user_name, query):
                 await bot.send_cached_media(
                     chat_id=userid,
                     file_id=file["file_id"],
-                    caption=f_caption,
+                    caption=safe_caption(f_caption),
                     protect_content=True if ident == "filep" else False,
                     reply_markup=InlineKeyboardMarkup(
                         [[
