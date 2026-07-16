@@ -119,6 +119,16 @@ async def is_file_already_saved(file_id, file_name):
             
     return False
 
+def _safe_caption(file_doc):
+    """Telegram media caption ki hard limit 1024 characters hai. DB me kisi bhi wajah se
+    lamba caption ho (purana ya galti se), yahan hamesha safe length tak trim kar do —
+    isse ye centralized jagah hai jaha se sab jagah (search, delivery, batch) files aati hai,
+    isliye MEDIA_CAPTION_TOO_LONG error kabhi nahi aayega."""
+    if file_doc and file_doc.get('caption') and len(file_doc['caption']) > 1024:
+        file_doc['caption'] = file_doc['caption'][:1021] + "..."
+    return file_doc
+
+
 async def get_search_results(chat_id, query, file_type=None, max_results=10, offset=0, filter=False):
     """For given query return (results, next_offset)"""
     
@@ -140,14 +150,14 @@ async def get_search_results(chat_id, query, file_type=None, max_results=10, off
         cursor2 = sec_col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
         
         async for file in cursor1:
-            files.append(file)
+            files.append(_safe_caption(file))
         async for file in cursor2:
-            files.append(file)
+            files.append(_safe_caption(file))
     else:
         cursor = col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
         
         async for file in cursor:
-            files.append(file)
+            files.append(_safe_caption(file))
 
     total_results = await col.count_documents(filter) if not MULTIPLE_DATABASE else ((await col.count_documents(filter)) + (await sec_col.count_documents(filter)))
     next_offset = "" if (offset + max_results) >= total_results else (offset + max_results)
@@ -183,7 +193,7 @@ async def get_bad_files(query, file_type=None, use_filter=False):
         total_results = await count_documents(col)
 
     async def find_documents(collection):
-        return [file async for file in collection.find(filter_criteria)]
+        return [_safe_caption(file) async for file in collection.find(filter_criteria)]
 
     if MULTIPLE_DATABASE:
         files = (await find_documents(col)) + (await find_documents(sec_col))
@@ -196,7 +206,7 @@ async def get_file_details(query):
     file = await col.find_one({'file_id': query})
     if not file:
         file = await sec_col.find_one({'file_id': query})
-    return file
+    return _safe_caption(file)
 
 def encode_file_id(s: bytes) -> str:
     r = b""
